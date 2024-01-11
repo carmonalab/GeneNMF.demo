@@ -1,0 +1,250 @@
+---
+title: "Test NMF for decomposition"
+author: "Massimo Andreatta"
+date: "`r format(Sys.Date(),'%e de %B, %Y')`"
+output: 
+  rmdformats::downcute:
+    lightbox: true
+    thumbnails: false
+    self_contained: true
+    gallery: true
+    code_folding: show
+  pkgdown:
+    as_is: true
+---
+
+```{r, include=FALSE, fig.width=16, fig.height=12}
+renv::restore()
+library(Seurat)
+library(ggplot2)
+library(SignatuR)
+library(UCell)
+library(patchwork)
+library(tidyr)
+library(dplyr)
+library(viridis)
+
+#install.packages('RcppML') 
+#remotes::install_github("zdebruine/RcppML")
+library(Matrix)
+library(RcppML)
+```
+
+Functions to run NMF
+```{r}
+source("functions.R")
+```
+
+## Set the paths
+
+```{r}
+wdir <- '~/Dropbox/CSI/Datasets/PBMC_Satija'
+data.path <- sprintf("%s/pbmc_multimodal.downsampled20k.seurat.rds", wdir)
+seu <- readRDS(data.path)
+```
+
+
+Prep data
+```{r}
+seu[["RNA"]] <- seu[["SCT"]]
+DefaultAssay(seu) <- "RNA"
+seu <- NormalizeData(seu)
+
+seu.list <- SplitObject(seu, split.by = "donor")
+#seu.list <- SplitObject(seu, split.by = "orig.ident")
+```
+
+Run NMF by sample
+```{r message=F, results=F, warning=F}
+nmf.res <- run_NMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
+                    do_centering=TRUE, use_var_feat=TRUE, nfeatures = 2000,
+                    exclude_ribo_mito=FALSE)
+```
+
+
+Heatmap of programs found by NMF
+```{r fig.width=25, fig.height=25}
+ph <- get_NMF_heatmap(nmf.res, method=0.5, max.genes=50,
+                                    hclust.method="ward.D2",
+                                    jaccard.cutoff = c(0,0.8))
+ggsave("plots/PBMC_heatmap_jaccard.png", plot=ph, height=18, width=19)
+```
+Find conserved programs
+```{r fig.width=30, fig.height=5}
+nprograms = 10
+nmf.genes <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+                                    hclust.method="ward.D2", nprograms=nprograms,
+                                    min.confidence=0.3,
+                                    plot.tree=TRUE, return.tree=FALSE)
+```
+
+```{r}
+nmf.cov <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+                                    hclust.method="ward.D2", nprograms=nprograms,
+                                    min.confidence=0.3, plot.tree = FALSE,
+                                    return.coverage = TRUE)
+
+t(as.data.frame(nmf.cov))
+lapply(nmf.genes, head)
+```
+
+```{r}
+top_p <- lapply(nmf.genes, function(program) {
+  run_GSEA(program, universe=rownames(seu), category = "C8")
+})
+
+for (t in seq_along(top_p)) {
+  print(head(top_p[[t]]))
+}
+
+```
+
+
+```{r}
+seu <- AddModuleScore_UCell(seu, features = nmf.genes, assay="RNA", ncores=4, name = "")
+```
+
+```{r fig.width=10}
+a <- DimPlot(seu, group.by = "celltype.l1", label=T)
+b <- DimPlot(seu, group.by = "donor", label=F)
+
+(a | b) & theme(aspect.ratio = 1, axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank())
+```
+
+```{r fig.width=15, fig.height=8}
+FeaturePlot(seu, features=names(nmf.genes), ncol=5) & theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank())
+
+```
+
+```{r fig.width=18, fig.height=6}
+VlnPlot(seu, features=names(nmf.genes), group.by = "celltype.l1", pt.size = 0, ncol=5)
+```
+
+Plot NMF embeddings
+```{r}
+ndim <- 15
+seu <- RunNMF(seu, k = ndim, nfeatures = 2000, L1=c(0.05,0), use_var_feat = T)
+Reductions(seu)
+
+
+seu <- RunUMAP(seu, reduction = "NMF", dims=1:ndim, reduction.name = "NMF_UMAP", reduction.key = "nmfUMAP_")
+```
+
+vs. using PCA embeddings
+```{r}
+seu <- ScaleData(seu) |> RunPCA(npcs = ndim)
+Reductions(seu)
+
+
+seu <- RunUMAP(seu, reduction = "pca", dims=1:ndim, reduction.name = "PCA_UMAP", reduction.key = "pcaUMAP_")
+```
+
+```{r}
+a <- DimPlot(seu, reduction = "PCA_UMAP", group.by = "celltype.l1", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("PCA UMAP") + NoLegend()
+
+b <- DimPlot(seu, reduction = "NMF_UMAP", group.by = "celltype.l1", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("NMF UMAP") + NoLegend()
+
+a | b
+```
+
+```{r}
+res <- 0.1
+seu <- FindNeighbors(seu, reduction = "NMF", dims=1:ndim)
+seu <- FindClusters(seu, resolution = res)
+```
+```{r}
+DimPlot(seu, reduction = "NMF_UMAP")
+```
+
+```{r fig.width=15, fig.height=8}
+FeaturePlot(seu, features=names(nmf.genes)) & theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank())
+
+```
+
+Subset on T cells
+```{r}
+seu.T <- subset(seu, subset=celltype.l1 %in% c("CD4 T","CD8 T"))
+seu.list <- SplitObject(seu.T, split.by = "donor")
+```
+
+Run NMF by sample
+```{r message=F, results=F, warning=F}
+nmf.res <- run_NMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
+                    do_centering=TRUE, use_var_feat=TRUE, nfeatures = 1000,
+                    exclude_ribo_mito=FALSE)
+```
+
+
+Heatmap of programs found by NMF
+```{r fig.width=25, fig.height=25}
+ph <- get_NMF_heatmap(nmf.res, method=0.5, max.genes=50,
+                                    hclust.method="ward.D2",
+                                    jaccard.cutoff = c(0,0.8))
+```
+
+Find conserved programs
+```{r fig.width=30, fig.height=5}
+nmf.genes <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+                                    hclust.method="ward.D2", nprograms=10,
+                                    min.confidence=0.3,
+                                    plot.tree=TRUE, return.tree=FALSE)
+```
+
+```{r}
+nmf.genes
+```
+
+```{r}
+top_p <- lapply(nmf.genes, function(program) {
+  run_GSEA(program, universe=rownames(seu), category = "C8")
+})
+
+for (t in seq_along(top_p)) {
+  print(head(top_p[[t]]))
+}
+
+```
+
+```{r}
+seu.T <- AddModuleScore_UCell(seu.T, features = nmf.genes, assay="RNA", ncores=4, name = "")
+```
+
+```{r}
+DimPlot(seu.T, group.by = "celltype.l2", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank())
+```
+
+
+```{r fig.width=15, fig.height=8}
+FeaturePlot(seu.T, features=names(nmf.genes)) & theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank())
+
+```
+
+```{r fig.height=8}
+VlnPlot(seu.T, features=names(nmf.genes), group.by = "celltype.l2", pt.size = 0)
+```
+
+
+
+
+
+
