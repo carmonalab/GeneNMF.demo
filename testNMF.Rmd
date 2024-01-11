@@ -23,11 +23,11 @@ library(patchwork)
 library(tidyr)
 library(dplyr)
 library(viridis)
-
-#install.packages('RcppML') 
-#remotes::install_github("zdebruine/RcppML")
 library(Matrix)
 library(RcppML)
+
+#remotes::install_github("carmonalab/GeneNMF")
+library(GeneNMF)
 ```
 
 
@@ -52,7 +52,7 @@ seu.list <- SplitObject(seu, split.by = "donor")
 
 Run NMF by sample
 ```{r message=F, results=F, warning=F}
-nmf.res <- runNMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
+nmf.res <- multiNMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
                     do_centering=TRUE, calculate_hvg = TRUE, nfeatures = 2000,
                     exclude_ribo_mito=FALSE)
 ```
