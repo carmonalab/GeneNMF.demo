@@ -30,10 +30,6 @@ library(Matrix)
 library(RcppML)
 ```
 
-Functions to run NMF
-```{r}
-source("functions.R")
-```
 
 ## Set the paths
 
@@ -56,30 +52,32 @@ seu.list <- SplitObject(seu, split.by = "donor")
 
 Run NMF by sample
 ```{r message=F, results=F, warning=F}
-nmf.res <- run_NMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, use_var_feat=TRUE, nfeatures = 2000,
+nmf.res <- runNMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
+                    do_centering=TRUE, calculate_hvg = TRUE, nfeatures = 2000,
                     exclude_ribo_mito=FALSE)
 ```
 
 
 Heatmap of programs found by NMF
 ```{r fig.width=25, fig.height=25}
-ph <- get_NMF_heatmap(nmf.res, method=0.5, max.genes=50,
+ph <- getNMFheatmap(nmf.res, method=0.5, max.genes=50,
                                     hclust.method="ward.D2",
                                     jaccard.cutoff = c(0,0.8))
 ggsave("plots/PBMC_heatmap_jaccard.png", plot=ph, height=18, width=19)
 ```
+
 Find conserved programs
 ```{r fig.width=30, fig.height=5}
 nprograms = 10
-nmf.genes <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+library(dendextend)
+nmf.genes <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
                                     hclust.method="ward.D2", nprograms=nprograms,
                                     min.confidence=0.3,
                                     plot.tree=TRUE, return.tree=FALSE)
 ```
-
+Get coverage for consensus meta-programs
 ```{r}
-nmf.cov <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+nmf.cov <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
                                     hclust.method="ward.D2", nprograms=nprograms,
                                     min.confidence=0.3, plot.tree = FALSE,
                                     return.coverage = TRUE)
@@ -88,9 +86,13 @@ t(as.data.frame(nmf.cov))
 lapply(nmf.genes, head)
 ```
 
+Intepretation of programs by GSEA
 ```{r}
+library(msigdbr)
+library(fgsea)
+
 top_p <- lapply(nmf.genes, function(program) {
-  run_GSEA(program, universe=rownames(seu), category = "C8")
+  runGSEA(program, universe=rownames(seu), category = "C8")
 })
 
 for (t in seq_along(top_p)) {
@@ -128,9 +130,10 @@ VlnPlot(seu, features=names(nmf.genes), group.by = "celltype.l1", pt.size = 0, n
 Plot NMF embeddings
 ```{r}
 ndim <- 15
-seu <- RunNMF(seu, k = ndim, nfeatures = 2000, L1=c(0.05,0), use_var_feat = T)
-Reductions(seu)
 
+seu <- FindVariableFeatures(seu, nfeatures = 1000)
+seu <- RunNMF(seu, k = ndim, L1=c(0.05,0))
+Reductions(seu)
 
 seu <- RunUMAP(seu, reduction = "NMF", dims=1:ndim, reduction.name = "NMF_UMAP", reduction.key = "nmfUMAP_")
 ```
@@ -163,6 +166,7 @@ res <- 0.1
 seu <- FindNeighbors(seu, reduction = "NMF", dims=1:ndim)
 seu <- FindClusters(seu, resolution = res)
 ```
+
 ```{r}
 DimPlot(seu, reduction = "NMF_UMAP")
 ```
@@ -183,22 +187,20 @@ seu.list <- SplitObject(seu.T, split.by = "donor")
 
 Run NMF by sample
 ```{r message=F, results=F, warning=F}
-nmf.res <- run_NMF(seu.list, assay="RNA", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, use_var_feat=TRUE, nfeatures = 1000,
-                    exclude_ribo_mito=FALSE)
+nmf.res <- multiNMF(seu.list, assay="RNA", slot="data", k=4:9, nfeatures = 1000)
 ```
 
 
 Heatmap of programs found by NMF
 ```{r fig.width=25, fig.height=25}
-ph <- get_NMF_heatmap(nmf.res, method=0.5, max.genes=50,
+ph <- getNMFheatmap(nmf.res, method=0.5, max.genes=50,
                                     hclust.method="ward.D2",
                                     jaccard.cutoff = c(0,0.8))
 ```
 
 Find conserved programs
 ```{r fig.width=30, fig.height=5}
-nmf.genes <- get_NMF_genes_consensus(nmf.res, method=0.5, max.genes=50,
+nmf.genes <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
                                     hclust.method="ward.D2", nprograms=10,
                                     min.confidence=0.3,
                                     plot.tree=TRUE, return.tree=FALSE)
@@ -210,7 +212,7 @@ nmf.genes
 
 ```{r}
 top_p <- lapply(nmf.genes, function(program) {
-  run_GSEA(program, universe=rownames(seu), category = "C8")
+  runGSEA(program, universe=rownames(seu), category = "C8")
 })
 
 for (t in seq_along(top_p)) {
