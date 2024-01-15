@@ -162,7 +162,7 @@ A simple way to evaluate gene programs learned from the data is to calculate gen
 seu <- AddModuleScore_UCell(seu, features = nmf.genes, assay="SCT", ncores=4, name = "")
 ```
 
-```{r fig.width=15, fig.height=8}
+```{r fig.width=15}
 FeaturePlot(seu, features=names(nmf.genes), ncol=5) & theme(aspect.ratio = 1,
                                                             axis.text = element_blank(),
     axis.title = element_blank(),
@@ -172,7 +172,7 @@ FeaturePlot(seu, features=names(nmf.genes), ncol=5) & theme(aspect.ratio = 1,
 
 We can see how many of the programs are enriched in specific cell subtypes (cell type annotation from the original study).
 
-```{r fig.width=18}
+```{r fig.width=24}
 VlnPlot(seu, features=names(nmf.genes), group.by = "celltype.l1",
         pt.size = 0, ncol=5) & theme(aspect.ratio=1)
 ```
