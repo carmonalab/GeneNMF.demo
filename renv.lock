@@ -155,7 +155,7 @@
       "RemoteRepo": "GeneNMF",
       "RemoteUsername": "carmonalab",
       "RemoteRef": "HEAD",
-      "RemoteSha": "e9c7d88d7d01a4d7aeb11d2a932f83dc2aaa57bf",
+      "RemoteSha": "a82a1b49b31f71be4f8e9de18234a607651c00b0",
       "Requirements": [
         "Matrix",
         "NMF",
@@ -164,7 +164,7 @@
         "Seurat",
         "stats"
       ],
-      "Hash": "c34fbc6f73e100198f2be2eb6ce14176"
+      "Hash": "b3117e7d7b094fbd8d4b52a55d8fef1f"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
@@ -2046,6 +2046,20 @@
         "utils"
       ],
       "Hash": "1c9935f4f14c6c096c9c9072ddee59f1"
+    },
+    "remotes": {
+      "Package": "remotes",
+      "Version": "2.4.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "methods",
+        "stats",
+        "tools",
+        "utils"
+      ],
+      "Hash": "63d15047eb239f95160112bcadc4fcb9"
     },
     "renv": {
       "Package": "renv",
