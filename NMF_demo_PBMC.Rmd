@@ -117,7 +117,7 @@ nmf.genes <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
                                     plot.tree=TRUE, return.tree=FALSE)
 ```
 
-We can also extract the "coverage" for consensus meta-programs; i.e. in what fraction of samples it was detected. On this dataset, all programs except Program10 were found in all samples.
+We can also extract the "coverage" for consensus meta-programs; i.e. in what fraction of samples it was detected. On this dataset, all programs except Programs 8 and 9 were found in all samples.
 
 ```{r}
 nmf.cov <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
@@ -149,7 +149,7 @@ top_p <- lapply(nmf.genes, function(program) {
 })
 ```
 
-For example, Program 1 appears to correlate significantly with a B cell signature:
+For example, Program 2 appears to correlate significantly with a B cell signature:
 ```{r}
 head(top_p$Program1)
 ```
