@@ -39,7 +39,7 @@ library(RcppML)
 library(dendextend)
 library(viridis)
 
-remotes::install_github("carmonalab/GeneNMF")
+remotes::install_github("carmonalab/GeneNMF", ref="dev")
 library(GeneNMF)
 ```
 
@@ -93,50 +93,40 @@ Identification of robust gene programs requires their detection across samples a
 ```{r message=F, results=F, warning=F}
 seu.list <- SplitObject(seu, split.by = "donor")
 
-nmf.res <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
+geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
                     do_centering=TRUE, calculate_hvg = TRUE, nfeatures = 2000,
                     exclude_ribo_mito=FALSE)
 ```
 
+We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
+```{r}
+geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs, max.genes=50,
+                                        hclust.method="ward.D2", nprograms=10, min.confidence=0.3)
+```
 
-We can now compare the gene programs identified over multiple samples and numbers of `k` and inspect their similarity. It can be useful to visualize pairwise similarity (Jaccard Index) between gene programs:
+
+It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (the MPs):
+```{r results=F, fig.keep = "none"}
+ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
+```
 
 ```{r fig.width=25, fig.height=25}
-ph <- getNMFheatmap(nmf.res, method=0.5, max.genes=50,
-                                    hclust.method="ward.D2",
-                                    jaccard.cutoff = c(0,0.8))
+ph$heatmap
 ```
 
-We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (which we can call meta-programs or MPs):
-
-```{r fig.width=30, fig.height=5}
-nprograms = 10
-nmf.genes <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
-                                    hclust.method="ward.D2", nprograms=nprograms,
-                                    min.confidence=0.3,
-                                    plot.tree=TRUE, return.tree=FALSE)
-```
-
-We can also extract the "coverage" for consensus meta-programs; i.e. in what fraction of samples it was detected. On this dataset, all programs except Programs 8 and 9 were found in all samples.
-
+We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
 ```{r}
-nmf.cov <- getNMFgenesConsensus(nmf.res, method=0.5, max.genes=50,
-                                    hclust.method="ward.D2", nprograms=nprograms,
-                                    min.confidence=0.3, plot.tree = FALSE,
-                                    return.coverage = TRUE)
-
-t(as.data.frame(nmf.cov))
-
+geneNMF.metaprograms$metaprograms.metrics
 ```
 
 What are the genes driving each program?
 ```{r}
-t(as.data.frame(lapply(nmf.genes, head)))
+t(as.data.frame(lapply(geneNMF.metaprograms$metaprograms.genes, head)))
 ```
 
 # Intepretation of gene programs by GSEA
 
-To aid the intepretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
+To aid the interpretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
 
 ```{r results=F, warning=F, message=F}
 library(msigdbr)
@@ -144,14 +134,14 @@ library(fgsea)
 ```
 
 ```{r}
-top_p <- lapply(nmf.genes, function(program) {
+top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
   runGSEA(program, universe=rownames(seu), category = "C8")
 })
 ```
 
 For example, Program 2 appears to correlate significantly with a B cell signature:
 ```{r}
-head(top_p$Program1)
+head(top_p$MetaProgram2)
 ```
 
 # Signature scores for gene programs
@@ -159,37 +149,30 @@ head(top_p$Program1)
 A simple way to evaluate gene programs learned from the data is to calculate gene signature scores with the `UCell` package.
 
 ```{r}
-seu <- AddModuleScore_UCell(seu, features = nmf.genes, assay="SCT", ncores=4, name = "")
-```
-
-```{r fig.width=15}
-FeaturePlot(seu, features=names(nmf.genes), ncol=5) & theme(aspect.ratio = 1,
-                                                            axis.text = element_blank(),
-    axis.title = element_blank(),
-    axis.ticks = element_blank())
-
+mp.genes <- geneNMF.metaprograms$metaprograms.genes
+seu <- AddModuleScore_UCell(seu, features = mp.genes, assay="SCT", ncores=4, name = "")
 ```
 
 We can see how many of the programs are enriched in specific cell subtypes (cell type annotation from the original study).
 
 ```{r fig.width=15}
-VlnPlot(seu, features=names(nmf.genes), group.by = "celltype.l1",
+VlnPlot(seu, features=names(mp.genes), group.by = "celltype.l1",
         pt.size = 0, ncol=5)
 ```
 
 # Signature scores to define integrated space
 
-Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as robust gene programs (aka metaprograms) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
+Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as meta-programs (MPs) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
 ```{r}
-matrix <- seu@meta.data[,names(nmf.genes)]
+matrix <- seu@meta.data[,names(mp.genes)]
 dimred <- scale(matrix)
 
-colnames(dimred) <- paste0("NMF_",seq(1, ncol(dimred)))
+colnames(dimred) <- paste0("MP_",seq(1, ncol(dimred)))
 #New dim reduction
-seu@reductions[["NMFsignatures"]] <- new("DimReduc",
+seu@reductions[["MPsignatures"]] <- new("DimReduc",
                                          cell.embeddings = dimred,
                                          assay.used = "RNA",
-                                         key = "NMF_",
+                                         key = "MP_",
                                          global = FALSE)
 ```
 
@@ -198,13 +181,13 @@ We can also use these scores to generate a UMAP representation and visualize the
 
 ```{r warning=F, results=F, message=F}
 set.seed(123)
-seu <- RunUMAP(seu, reduction="NMFsignatures", dims=1:length(seu@reductions[["NMFsignatures"]]),
-               metric = "euclidean", reduction.name = "umap_NMF")
+seu <- RunUMAP(seu, reduction="MPsignatures", dims=1:length(seu@reductions[["MPsignatures"]]),
+               metric = "euclidean", reduction.name = "umap_MP")
 ```
 
-How do the signature scores for the consensus programs look like in the combined space?
+How do the signature scores for the meta-programs look like in the combined space?
 ```{r fig.width=15, fig.height=10, warning=F, message=F}
-FeaturePlot(seu, features = names(nmf.genes), reduction = "umap_NMF", ncol=4) &
+FeaturePlot(seu, features = names(mp.genes), reduction = "umap_MP", ncol=4) &
   scale_color_viridis(option="B") &
    theme(aspect.ratio = 1, axis.text=element_blank(), axis.ticks=element_blank())
 ```

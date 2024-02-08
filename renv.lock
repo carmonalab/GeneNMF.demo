@@ -154,17 +154,18 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "GeneNMF",
       "RemoteUsername": "carmonalab",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "2cbd6e773a2364de473fe8324e51fd57478bec97",
+      "RemoteRef": "dev",
+      "RemoteSha": "32fbacb5cbaad06fbc08e4c564d14f6e4b9fe3e1",
       "Requirements": [
         "Matrix",
         "NMF",
         "R",
         "RcppML",
         "Seurat",
+        "cluster",
         "stats"
       ],
-      "Hash": "39a646f91c1b06e38856716574c437cc"
+      "Hash": "012fd86fe1aa72bffd0ad659d8c4d4b5"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
@@ -2086,7 +2087,7 @@
     },
     "reticulate": {
       "Package": "reticulate",
-      "Version": "1.34.0",
+      "Version": "1.35.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -2104,7 +2105,7 @@
         "utils",
         "withr"
       ],
-      "Hash": "a69f815bcba8a055de0b08339b943f9e"
+      "Hash": "90be16b53b955990db4aa355c03d85eb"
     },
     "rlang": {
       "Package": "rlang",
@@ -2362,7 +2363,7 @@
     },
     "spatstat.explore": {
       "Package": "spatstat.explore",
-      "Version": "3.2-5",
+      "Version": "3.2-6",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -2382,7 +2383,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "81ecb92d6bf49ad7090951e3fe16bd8a"
+      "Hash": "79f7cc7fdf4b818334483e8f2a159cf6"
     },
     "spatstat.geom": {
       "Package": "spatstat.geom",
