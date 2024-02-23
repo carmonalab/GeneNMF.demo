@@ -1,7 +1,7 @@
 ---
 title: "Decomposing scRNA-seq data using NMF - a demo"
 author: "M. Andreatta"
-date: "13/01/2024"
+date: "23/02/2024"
 output:
   rmdformats::readthedown:
     self-contained: true
@@ -30,17 +30,19 @@ renv::restore()
 ```
 
 ```{r results=F, warning=F, message=F}
+library(remotes)
+remotes::install_github("carmonalab/GeneNMF")
+library(GeneNMF)
+
 library(Seurat)
 library(ggplot2)
 library(UCell)
 library(patchwork)
 library(Matrix)
 library(RcppML)
-library(dendextend)
+library(ggtree)
+library(tidytree)
 library(viridis)
-
-remotes::install_github("carmonalab/GeneNMF", ref="dev")
-library(GeneNMF)
 ```
 
 Then download the test dataset for this demo.
@@ -65,7 +67,7 @@ NMF can be applied to reduce the dimensionality of the data from tens of thousan
 ndim <- 15
 
 seu <- FindVariableFeatures(seu, nfeatures = 1000)
-seu <- RunNMF(seu, k = ndim, assay="SCT")
+seu <- runNMF(seu, k = ndim, assay="SCT")
 ```
 
 ```{r}
@@ -94,18 +96,21 @@ Identification of robust gene programs requires their detection across samples a
 seu.list <- SplitObject(seu, split.by = "donor")
 
 geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, calculate_hvg = TRUE, nfeatures = 2000,
-                    exclude_ribo_mito=FALSE)
+                    do_centering=TRUE, nfeatures = 2000)
 ```
 
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
-geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs, max.genes=50,
-                                        hclust.method="ward.D2", nprograms=10, min.confidence=0.3)
+geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
+                                        nprograms=10,
+                                        max.genes=50,
+                                        hclust.method="ward.D2",
+                                        min.confidence=0.3)
 ```
 
 
-It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (the MPs):
+It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
+
 ```{r results=F, fig.keep = "none"}
 ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
 ```
@@ -114,7 +119,13 @@ ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
 ph$heatmap
 ```
 
+```{r fig.width=10, fig.height=3}
+ph$tree
+```
+
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
+
+Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverge), or have bad internal consistency (low silhouette and meanJaccard). 
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
 ```
@@ -139,9 +150,9 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 })
 ```
 
-For example, Program 2 appears to correlate significantly with a B cell signature:
+For example, Program 1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
 ```{r}
-head(top_p$MetaProgram2)
+head(top_p$MP9)
 ```
 
 # Signature scores for gene programs
