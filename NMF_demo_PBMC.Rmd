@@ -14,7 +14,7 @@ knit: (function(input_file, encoding) {
  output_file=file.path(dirname(input_file), out_dir, 'NMF_demo_PBMC.html'))})
 ---
 
-Non-negative matrix factorization is a tool for the analysis of high dimensional data that allows extracting sparse and meaningful features from a set of non-negative data vectors. It is well suited for decomposing scRNA-seq data, effectively reducing large complex matrices ($10^4$ of genes times $10^5$ of cells) into a few interpretable gene programs. It has been especially used to extract recurrent gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4)), which are otherwise difficult to integrated and analyse jointly.
+Non-negative matrix factorization is a method for the analysis of high dimensional data that allows extracting sparse and meaningful features from a set of non-negative data vectors. It is well suited for decomposing scRNA-seq data, effectively reducing large complex matrices ($10^4$ of genes times $10^5$ of cells) into a few interpretable gene programs. It has been especially used to extract recurrent gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4)), which are otherwise difficult to integrate and analyse jointly.
 
 ![](docs/NMF_schematic.png){width=75%}
 
@@ -26,6 +26,7 @@ Here, to illustrate the methods implemented in the [GeneNMF package](https://git
 
 Here are some packages you'll need for this demo:
 ```{r echo=F, results=F, warning=F, message=F}
+library(renv)
 renv::restore()
 ```
 
@@ -47,6 +48,8 @@ library(viridis)
 
 Then download the test dataset for this demo.
 ```{r}
+options(timeout=1000)
+
 ddir <- "input"
 data.path <- sprintf("%s/pbmc_multimodal.downsampled20k.seurat.rds", ddir)
 
@@ -152,7 +155,7 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 
 For example, Program 1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
 ```{r}
-head(top_p$MP9)
+head(top_p$MP1)
 ```
 
 # Signature scores for gene programs
@@ -212,3 +215,7 @@ NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unb
 * GeneNMF package - [LINK](https://github.com/carmonalab/GeneNMF)
 * We use the ultra-fast RcppML method for NMF - [LINK](https://cran.r-project.org/web/packages/RcppML/vignettes/RcppML.html)
 
+# Session Info
+```{r}
+sessionInfo()
+```

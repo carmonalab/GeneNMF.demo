@@ -1,5 +1,6 @@
 .Rproj.user
 .Rprofile
+.Rhistory
 renv/
 data/
 input/
