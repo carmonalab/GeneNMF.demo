@@ -34,15 +34,12 @@ renv::restore()
 library(remotes)
 remotes::install_github("carmonalab/GeneNMF")
 library(GeneNMF)
-
 library(Seurat)
 library(ggplot2)
 library(UCell)
 library(patchwork)
 library(Matrix)
 library(RcppML)
-library(ggtree)
-library(tidytree)
 library(viridis)
 ```
 
@@ -114,16 +111,8 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 
 It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
-```{r results=F, fig.keep = "none"}
+```{r fig.width=13, fig.height=11}
 ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
-```
-
-```{r fig.width=25, fig.height=25}
-ph$heatmap
-```
-
-```{r fig.width=10, fig.height=3}
-ph$tree
 ```
 
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
