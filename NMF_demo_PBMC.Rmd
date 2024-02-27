@@ -22,7 +22,7 @@ Non-negative matrix factorization is a method for the analysis of high dimension
 
 Here, to illustrate the methods implemented in the [GeneNMF package](https://github.com/carmonalab/GeneNMF), we will apply NMF on a single-cell cell dataset of human PBMCs - a downsampled version of the dataset published by [Hao et al. (2021)](https://pubmed.ncbi.nlm.nih.gov/34062119/). 
 
-# Set up the enviroment
+# Set up the environment
 
 Here are some packages you'll need for this demo:
 ```{r echo=F, results=F, warning=F, message=F}
