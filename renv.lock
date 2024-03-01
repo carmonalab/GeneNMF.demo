@@ -155,7 +155,7 @@
       "RemoteRepo": "GeneNMF",
       "RemoteUsername": "carmonalab",
       "RemoteRef": "HEAD",
-      "RemoteSha": "4a5f5ecba88f5891e16b55a73887010847890852",
+      "RemoteSha": "9aa1ea65fb3ccd873373981cd1f87c7ffba7543d",
       "Requirements": [
         "NMF",
         "R",
@@ -166,7 +166,7 @@
         "stats",
         "viridis"
       ],
-      "Hash": "c79a2f2a37d8b0344dfaa21cc928d817"
+      "Hash": "6e6c9e0c1e175e92abb2eadea37e5c16"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
