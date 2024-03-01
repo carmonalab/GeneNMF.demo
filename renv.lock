@@ -108,6 +108,21 @@
       ],
       "Hash": "6d1689ee8b65614ba6ef4012a67b663a"
     },
+    "BiocStyle": {
+      "Package": "BiocStyle",
+      "Version": "2.30.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "BiocManager",
+        "bookdown",
+        "knitr",
+        "rmarkdown",
+        "stats",
+        "utils",
+        "yaml"
+      ],
+      "Hash": "1e22f9ad3acac55ff3069c5292d858cd"
+    },
     "BiocVersion": {
       "Package": "BiocVersion",
       "Version": "3.18.1",
@@ -709,14 +724,14 @@
     },
     "UCell": {
       "Package": "UCell",
-      "Version": "2.7.5",
+      "Version": "2.7.6",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "UCell",
       "RemoteUsername": "carmonalab",
-      "RemoteRef": "dev_local",
-      "RemoteSha": "496dcf50f6296f02f7610b9a10214ed14926a7b0",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "6567a4e761b990ef20ec9dab0e4b52880729b248",
       "Requirements": [
         "BiocNeighbors",
         "BiocParallel",
@@ -728,7 +743,7 @@
         "methods",
         "stats"
       ],
-      "Hash": "f9daf6506b304ef18708221463518c50"
+      "Hash": "a747feb7f5fe77c56f3001185dd1f656"
     },
     "XVector": {
       "Package": "XVector",

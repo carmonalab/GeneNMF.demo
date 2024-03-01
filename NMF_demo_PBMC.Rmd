@@ -32,6 +32,7 @@ renv::restore()
 
 ```{r results=F, warning=F, message=F}
 library(remotes)
+#remotes::install_github("carmonalab/UCell")
 #remotes::install_github("carmonalab/GeneNMF")
 library(GeneNMF)
 library(Seurat)
@@ -102,7 +103,7 @@ geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
-                                        nprograms=10,
+                                        nprograms=12,
                                         max.genes=50,
                                         hclust.method="ward.D2",
                                         min.confidence=0.3)
@@ -168,6 +169,8 @@ VlnPlot(seu, features=names(mp.genes), group.by = "celltype.l1",
 Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as meta-programs (MPs) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
 ```{r}
 matrix <- seu@meta.data[,names(mp.genes)]
+
+#dimred <- scale(matrix)
 dimred <- as.matrix(matrix)
 
 colnames(dimred) <- paste0("MP_",seq(1, ncol(dimred)))
