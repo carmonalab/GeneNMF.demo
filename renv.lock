@@ -149,13 +149,8 @@
     "GeneNMF": {
       "Package": "GeneNMF",
       "Version": "0.4.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "GeneNMF",
-      "RemoteUsername": "carmonalab",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "9aa1ea65fb3ccd873373981cd1f87c7ffba7543d",
+      "Source": "Bioconductor",
+      "Repository": "RSPM",
       "Requirements": [
         "NMF",
         "R",
@@ -166,11 +161,11 @@
         "stats",
         "viridis"
       ],
-      "Hash": "6e6c9e0c1e175e92abb2eadea37e5c16"
+      "Hash": "eb23619bdeb5e268c1009ba3f2df934a"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
-      "Version": "1.38.5",
+      "Version": "1.38.6",
       "Source": "Bioconductor",
       "Repository": "Bioconductor 3.18",
       "Requirements": [
@@ -185,7 +180,7 @@
         "stats4",
         "utils"
       ],
-      "Hash": "7575d02551088d69cfcbf65a3a6f0b08"
+      "Hash": "7d566eec72f05303e8e799cebc49d334"
     },
     "GenomeInfoDbData": {
       "Package": "GenomeInfoDbData",
@@ -342,7 +337,7 @@
     },
     "RCurl": {
       "Package": "RCurl",
-      "Version": "1.98-1.13",
+      "Version": "1.98-1.14",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -350,7 +345,7 @@
         "bitops",
         "methods"
       ],
-      "Hash": "318c7b8d68358b45cbc6115dda23d7db"
+      "Hash": "47f648d288079d0c696804ad4e55197e"
     },
     "ROCR": {
       "Package": "ROCR",
@@ -419,7 +414,7 @@
     },
     "RcppEigen": {
       "Package": "RcppEigen",
-      "Version": "0.3.3.9.4",
+      "Version": "0.3.4.0.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -428,7 +423,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "acb0a5bf38490f26ab8661b467f4f53a"
+      "Hash": "df49e3306f232ec28f1604e36a202847"
     },
     "RcppHNSW": {
       "Package": "RcppHNSW",
@@ -517,7 +512,7 @@
     },
     "Seurat": {
       "Package": "Seurat",
-      "Version": "5.0.1",
+      "Version": "5.0.2",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -580,7 +575,7 @@
         "utils",
         "uwot"
       ],
-      "Hash": "7529b4701d0ad499db7bbf4e6934aed0"
+      "Hash": "3705cd617f5ae8d74cbab2538842611b"
     },
     "SeuratObject": {
       "Package": "SeuratObject",
@@ -644,7 +639,7 @@
     },
     "SparseArray": {
       "Package": "SparseArray",
-      "Version": "1.2.3",
+      "Version": "1.2.4",
       "Source": "Bioconductor",
       "Repository": "Bioconductor 3.18",
       "Requirements": [
@@ -660,7 +655,7 @@
         "methods",
         "stats"
       ],
-      "Hash": "06313606606691b8fdf712587a021dd6"
+      "Hash": "391092e7b81373ab624bd6471cebccd4"
     },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
@@ -950,14 +945,14 @@
     },
     "data.table": {
       "Package": "data.table",
-      "Version": "1.15.0",
+      "Version": "1.15.2",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R",
         "methods"
       ],
-      "Hash": "cfbbb4aed6e78cd45f17123a9ec9981a"
+      "Hash": "536dfe4ac4093b5d115caed7a1a7223b"
     },
     "data.tree": {
       "Package": "data.tree",
@@ -974,7 +969,7 @@
     },
     "deldir": {
       "Package": "deldir",
-      "Version": "2.0-2",
+      "Version": "2.0-4",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -982,7 +977,7 @@
         "grDevices",
         "graphics"
       ],
-      "Hash": "9cde0014710c25657467a326b68db622"
+      "Hash": "24754fce82729ff85317dd195b6646a8"
     },
     "dendextend": {
       "Package": "dendextend",
@@ -1857,7 +1852,7 @@
     },
     "parallelly": {
       "Package": "parallelly",
-      "Version": "1.37.0",
+      "Version": "1.37.1",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1865,7 +1860,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "8da17de8b15c89b574269fc414ff4e20"
+      "Hash": "5410df8d22bd36e616f2a2343dbb328c"
     },
     "patchwork": {
       "Package": "patchwork",
@@ -2067,29 +2062,15 @@
       ],
       "Hash": "1c9935f4f14c6c096c9c9072ddee59f1"
     },
-    "remotes": {
-      "Package": "remotes",
-      "Version": "2.4.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "methods",
-        "stats",
-        "tools",
-        "utils"
-      ],
-      "Hash": "63d15047eb239f95160112bcadc4fcb9"
-    },
     "renv": {
       "Package": "renv",
-      "Version": "1.0.3",
+      "Version": "1.0.5",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "utils"
       ],
-      "Hash": "41b847654f567341725473431dd0d5ab"
+      "Hash": "32c3f93e8360f667ca5863272ec8ba6a"
     },
     "reshape2": {
       "Package": "reshape2",
@@ -2406,7 +2387,7 @@
     },
     "spatstat.geom": {
       "Package": "spatstat.geom",
-      "Version": "3.2-8",
+      "Version": "3.2-9",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -2421,11 +2402,11 @@
         "stats",
         "utils"
       ],
-      "Hash": "309fb3fbebc875c09c8b96c21cba61c1"
+      "Hash": "96b9f23da42d16660aa6d136ad99cf5f"
     },
     "spatstat.random": {
       "Package": "spatstat.random",
-      "Version": "3.2-2",
+      "Version": "3.2-3",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -2438,7 +2419,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "d05f37e83177665a5eb466da953ffc0f"
+      "Hash": "01aff260c49550e820a47d97e566af6a"
     },
     "spatstat.sparse": {
       "Package": "spatstat.sparse",

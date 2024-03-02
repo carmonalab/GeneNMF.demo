@@ -31,8 +31,7 @@ renv::restore()
 ```
 
 ```{r results=F, warning=F, message=F}
-library(remotes)
-#remotes::install_github("carmonalab/GeneNMF")
+install.packages("GeneNMF")
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
