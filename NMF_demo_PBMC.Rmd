@@ -87,9 +87,9 @@ DimPlot(seu, reduction = "NMF_UMAP", group.by = "celltype.l1", label=T) + theme(
 
 ```
 
-# Consistent NMF programs across multiple samples
+# Consistent NMF meta-programs across multiple samples
 
-Identification of robust gene programs requires their detection across samples and variability of input parameters. Perhaps the most crucial parameter to NMF is the dimensionality `k`, which corresponds to the number of programs of the low-dimensional matrix. To determine robust programs, we can run NMF over multiple numbers of `k` and determine programs that are consistenly found across these runs. The `multiNMF()` function automatically performs NMF over a list of samples and for multiple values of `k`:
+Identification of robust gene programs requires their detection across samples and variability of input parameters. Perhaps the most crucial parameter to NMF is the dimensionality `k`, which corresponds to the number of programs of the low-dimensional matrix. To determine robust programs, we can run NMF over multiple numbers of `k` and determine programs that are consistently found across these runs. The `multiNMF()` function automatically performs NMF over a list of samples and for multiple values of `k`:
 
 ```{r message=F, results=F, warning=F}
 seu.list <- SplitObject(seu, split.by = "donor")
@@ -126,9 +126,9 @@ What are the genes driving each program?
 t(as.data.frame(lapply(geneNMF.metaprograms$metaprograms.genes, head)))
 ```
 
-# Intepretation of gene programs by GSEA
+# Intepretation of meta-programs by GSEA
 
-To aid the interpretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
+To aid the interpretation of MPs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected MPs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
 
 ```{r results=F, warning=F, message=F}
 library(msigdbr)
@@ -141,30 +141,30 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 })
 ```
 
-For example, Program 1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
+For example, MP1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
 ```{r}
 head(top_p$MP1)
 ```
 
-# Signature scores for gene programs
+# Signature scores for meta-programs
 
-A simple way to evaluate gene programs learned from the data is to calculate gene signature scores with the `UCell` package.
+A simple way to evaluate MPs learned from the data is to calculate gene signature scores with the `UCell` package.
 
 ```{r}
 mp.genes <- geneNMF.metaprograms$metaprograms.genes
 seu <- AddModuleScore_UCell(seu, features = mp.genes, assay="SCT", ncores=4, name = "")
 ```
 
-We can see how many of the programs are enriched in specific cell subtypes (cell type annotation from the original study).
+We can now see which MPs are enriched in specific cell subtypes (cell type annotation from the original study).
 
 ```{r fig.width=15}
 VlnPlot(seu, features=names(mp.genes), group.by = "celltype.l1",
         pt.size = 0, ncol=5)
 ```
 
-# Signature scores to define integrated space
+# MP signature scores can define integrated spaces
 
-Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as meta-programs (MPs) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
+Individual cells can now be represented in terms of their MP scores. Importantly, here the MPs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects and represent samples in a common coordinate space. Let's store these coordinates in the Seurat object: 
 ```{r}
 matrix <- seu@meta.data[,names(mp.genes)]
 dimred <- as.matrix(matrix)
@@ -177,7 +177,6 @@ seu@reductions[["MPsignatures"]] <- new("DimReduc",
                                          key = "MP_",
                                          global = FALSE)
 ```
-
 
 We can also use these scores to generate a UMAP representation and visualize the data in 2D:
 
