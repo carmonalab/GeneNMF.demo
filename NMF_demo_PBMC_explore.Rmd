@@ -33,7 +33,7 @@ renv::restore()
 ```{r results=F, warning=F, message=F}
 library(remotes)
 remotes::install_github("carmonalab/UCell", ref="dev_local")
-remotes::install_github("carmonalab/GeneNMF")
+remotes::install_github("carmonalab/GeneNMF", ref="dev")
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
@@ -97,14 +97,29 @@ Identification of robust gene programs requires their detection across samples a
 seu.list <- SplitObject(seu, split.by = "donor")
 
 geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, nfeatures = 2000)
+                    scale=TRUE, nfeatures = 2000)
+```
+
+Or use PCA version
+```{r eval=F}
+geneNMF.programs <- multiPCA(seu.list, assay="SCT", slot="data", k=20, scale=TRUE,
+                    nfeatures = 2000)
+```
+
+Genes by sample
+```{r}
+genesNMF <- getNMFgenes(geneNMF.programs, weight.explained = 0.5)
+hist(unlist(lapply(genesNMF, length)))
 ```
 
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
+                                        weight.explained = 0.5,
+                                        specificity.weight = 1,
                                         nprograms=10,
                                         max.genes=50,
+                                        metric = "cosine",
                                         hclust.method="ward.D2",
                                         min.confidence=0.3)
 ```
@@ -113,7 +128,7 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
 ```{r fig.width=13, fig.height=11}
-ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
+ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,1))
 ```
 
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
@@ -130,7 +145,7 @@ geneNMF.metaprograms$metaprograms.genes <- geneNMF.metaprograms$metaprograms.gen
 
 What are the genes driving each program?
 ```{r}
-t(as.data.frame(lapply(geneNMF.metaprograms$metaprograms.genes, head)))
+geneNMF.metaprograms$metaprograms.genes
 ```
 
 # Intepretation of gene programs by GSEA
@@ -150,7 +165,7 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 
 For example, Program 1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
 ```{r}
-head(top_p$MP1)
+head(top_p$MP2)
 ```
 
 # Signature scores for gene programs
@@ -163,41 +178,6 @@ mp.genes <- geneNMF.metaprograms$metaprograms.genes
 seu.bu <- seu
 
 seu <- AddModuleScore_UCell(seu, features = mp.genes, assay="SCT", ncores=4, name = "")
-
-hist(seu$MP6,breaks=50)
-
-seu <- AddModuleScore_UCell(seu, features = mp.genes, assay="SCT", ncores=4, name = "",
-                            maxRank = 1500, storeRanks = T)
-
-ranks <- seu@assays$UCellRanks$counts
-ddd <- as.numeric(ranks[ranks>0])
-hist(ddd, breaks=100)
-
-head(sort(unique(seu$MP1)))
-head(sort(unique(seu$MP2)))
-head(sort(unique(seu$MP6)))
-
-cells <- colnames(seu)[seu$MP6 %in% sort(unique(seu$MP6))[2:4]]
-cells
-
-unique(ranks[mp.genes$MP6,cells[1]])
-unique(ranks[mp.genes$MP6,cells[2]])
-unique(ranks[mp.genes$MP6,cells[3]])
-
-#theoretical minimum
-maxRank = 1500
-len_sig <- length(mp.genes$MP6)
-u_value <- (maxRank+1) * (len_sig-1) + maxRank - (len_sig * (len_sig + 1))/2
-min.auc <- 1 - u_value/(len_sig * maxRank)
-min.auc
-head(sort(unique(seu$MP6)))
-min.mp6 <- min.auc
-
-len_sig <- length(mp.genes$MP1)
-u_value <- (maxRank+1) * (len_sig-1) + maxRank - (len_sig * (len_sig + 1))/2
-min.auc <- 1 - u_value/(len_sig * maxRank)
-min.auc
-head(sort(unique(seu$MP1)))
 ```
 
 We can see how many of the programs are enriched in specific cell subtypes (cell type annotation from the original study).
@@ -211,31 +191,15 @@ VlnPlot(seu, features=names(mp.genes), group.by = "celltype.l1",
 
 Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as meta-programs (MPs) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
 ```{r}
-scale <- T
+scale <- F
 center <- T
-do_pca <- F
 matrix <- seu@meta.data[,names(mp.genes)]
 
-#matrix <- matrix[,-6]
-
 if (scale) {
-#  q <- apply(matrix, 2, function(x){quantile(x, probs=0.99)})
-#  matrix.trim <- t(apply(matrix, 1, function(x) {
-#    trim <- which(x>q)
-#    x[trim] <- q[trim]
-#    x
-#  }))
-#  dimred <- data.matrix(scale(matrix.trim, scale=q, center = center))
   dimred <- as.matrix(scale(matrix))
   
 } else {
   dimred <- as.matrix(matrix)
-}
-
-#or PCA?
-if (do_pca) {
-  pca <- prcomp(matrix, scale. = scale)
-  dimred <- pca$x
 }
 
 colnames(dimred) <- paste0("MP_",seq(1, ncol(dimred)))
@@ -271,26 +235,12 @@ b <- DimPlot(seu, group.by = "donor", reduction = "umap_MP") + theme(aspect.rati
 a | b
 ```
 Make clusters in MP space
-```{r}
+```{r eval=T}
 seu <- FindNeighbors(seu, reduction="MPsignatures", graph.name = c("MP_nn","MP_snn"), dims = 1:dims)
 seu <- FindClusters(seu, resolution = 0.2, graph.name = "MP_snn")
 DimPlot(seu, group.by = "seurat_clusters", reduction = "umap_MP", label=T) + theme(aspect.ratio = 1)
 
 table(seu$donor, seu$seurat_clusters)
-```
-
-```{r fig.width=15}
-VlnPlot(seu, features=names(mp.genes), group.by = "seurat_clusters",
-        pt.size = 0, ncol=5)
-
-VlnPlot(seu, features=colnames(dimred), group.by = "seurat_clusters",
-        pt.size = 0, ncol=5)
-
-VlnPlot(seu, features=colnames(dimred), group.by = "donor",
-        pt.size = 0, ncol=5)
-
-VlnPlot(seu, features=names(mp.genes), group.by = "donor",
-        pt.size = 0, ncol=5)
 ```
 
 ```{r}
@@ -335,41 +285,7 @@ FeaturePlot(seu, features = c("LYZ","HLA-DRA","CD74","S100A9","nCount_RNA","nFea
    theme(aspect.ratio = 1, axis.text=element_blank(), axis.ticks=element_blank())
 ```
 
-```{r}
-sub <- subset(seu, subset = seurat_clusters %in% c(1,2))
-```
-
-```{r fig.width=15}
-VlnPlot(sub, features=names(mp.genes), group.by = "seurat_clusters",
-        pt.size = 0, ncol=5)
-
-VlnPlot(sub, features=colnames(dimred), group.by = "seurat_clusters",
-        pt.size = 0, ncol=5)
-
-VlnPlot(sub, features=names(mp.genes), group.by = "donor",
-        pt.size = 0, ncol=5)
-
-VlnPlot(sub, features=colnames(dimred), group.by = "donor",
-        pt.size = 0, ncol=5)
 
 
-VlnPlot(sub, features=c("nFeature_RNA","nCount_RNA"), group.by = "seurat_clusters",
-        pt.size = 0, ncol=5)
 
-```
-
-```{r fig.width=5, fig.height=10, warning=F, message=F}
-DotPlot(sub, features = rev(c("MP6", geneNMF.metaprograms$metaprograms.genes$MP6)),
-        group.by = "seurat_clusters", scale = F) + 
-  coord_flip()
-
-DotPlot(seu, features = rev(c("MP6", geneNMF.metaprograms$metaprograms.genes$MP6)),
-        group.by = "seurat_clusters", scale = F) + 
-  coord_flip()
-```
-
-```{r fig.width=30, fig.height=20, warning=F, message=F}
-FeaturePlot(sub, features = c("MP6","nCount_RNA","nFeature_RNA", geneNMF.metaprograms$metaprograms.genes$MP6), reduction = "umap_MP", ncol=8) &
-   theme(aspect.ratio = 1, axis.text=element_blank(), axis.ticks=element_blank())
-```
 
