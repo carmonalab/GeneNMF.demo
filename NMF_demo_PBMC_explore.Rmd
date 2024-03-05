@@ -116,7 +116,7 @@ We can now combine the gene programs identified over multiple samples and number
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
                                         weight.explained = 0.5,
-                                        specificity.weight = 1,
+                                        specificity.weight = 2,
                                         nprograms=10,
                                         max.genes=50,
                                         metric = "cosine",
