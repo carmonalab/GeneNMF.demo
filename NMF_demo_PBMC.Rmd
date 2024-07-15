@@ -96,8 +96,7 @@ Identification of robust gene programs requires their detection across samples a
 ```{r message=F, results=F, warning=F}
 seu.list <- SplitObject(seu, split.by = "donor")
 
-geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, nfeatures = 2000)
+geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, nfeatures = 2000)
 ```
 
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
