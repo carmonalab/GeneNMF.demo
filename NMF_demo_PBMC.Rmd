@@ -33,7 +33,7 @@ renv::restore()
 ```{r results=F, warning=F, message=F}
 library(remotes)
 #remotes::install_github("carmonalab/UCell")
-#remotes::install_github("carmonalab/GeneNMF")
+#remotes::install_github("carmonalab/GeneNMF", ref="dev")
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
@@ -96,14 +96,18 @@ Identification of robust gene programs requires their detection across samples a
 ```{r message=F, results=F, warning=F}
 seu.list <- SplitObject(seu, split.by = "donor")
 
-geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, nfeatures = 2000)
+geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, nfeatures = 1000, center = F, scale=F)
+#geneNMF.programs <- multiPCA(seu.list, assay="SCT", slot="data", k=4:9, nfeatures = 2000, center = F, scale=F)
 ```
 
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
-                                        nprograms=12,
+                                        nprograms=10,
+                                        specificity.weight = 5,
+                                        weight.explained = 0.7,
                                         max.genes=50,
+                                        metric = "cosine",
                                         hclust.method="ward.D2",
                                         min.confidence=0.3)
 ```
@@ -112,7 +116,7 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
 ```{r fig.width=13, fig.height=11}
-ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
+ph <- plotMetaPrograms(geneNMF.metaprograms, similarity.cutoff = c(0,1))
 ```
 
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
@@ -124,7 +128,7 @@ geneNMF.metaprograms$metaprograms.metrics
 
 What are the genes driving each program?
 ```{r}
-t(as.data.frame(lapply(geneNMF.metaprograms$metaprograms.genes, head)))
+lapply(geneNMF.metaprograms$metaprograms.genes.weights, head)
 ```
 
 # Intepretation of gene programs by GSEA
@@ -195,6 +199,19 @@ How do the signature scores for the meta-programs look like in the combined spac
 FeaturePlot(seu, features = names(mp.genes), reduction = "umap_MP", ncol=4) &
   scale_color_viridis(option="B") &
    theme(aspect.ratio = 1, axis.text=element_blank(), axis.ticks=element_blank())
+```
+
+```{r}
+a <- DimPlot(seu, reduction = "umap_MP", group.by = "celltype.l1", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("Original cell types") + NoLegend()
+
+b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("Donor") + NoLegend()
+a | b
 ```
 
 # Final remarks
