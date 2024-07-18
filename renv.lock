@@ -148,26 +148,29 @@
     },
     "GeneNMF": {
       "Package": "GeneNMF",
-      "Version": "0.5.2",
+      "Version": "0.6.0",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "GeneNMF",
       "RemoteUsername": "carmonalab",
-      "RemoteRef": "dev2",
-      "RemoteSha": "8488012e06ad56c341e2c83e5538acc245892ddc",
+      "RemoteRef": "dev",
+      "RemoteSha": "8751b93b18ec957a70b82cc6591016a9bdaa26bf",
       "Requirements": [
+        "Matrix",
         "R",
         "RcppML",
         "Seurat",
         "cluster",
         "irlba",
         "lsa",
+        "methods",
         "pheatmap",
         "stats",
+        "utils",
         "viridis"
       ],
-      "Hash": "3ccf2daeb507f64513b4564577cfb726"
+      "Hash": "2acdebbf6454c08aef284b543045fd75"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
@@ -282,37 +285,6 @@
         "methods"
       ],
       "Hash": "088cd2077b5619fcb7b373b1a45174e7"
-    },
-    "NMF": {
-      "Package": "NMF",
-      "Version": "0.26",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Biobase",
-        "BiocManager",
-        "R",
-        "RColorBrewer",
-        "cluster",
-        "codetools",
-        "colorspace",
-        "digest",
-        "doParallel",
-        "foreach",
-        "ggplot2",
-        "grDevices",
-        "graphics",
-        "grid",
-        "gridBase",
-        "methods",
-        "registry",
-        "reshape2",
-        "rngtools",
-        "stats",
-        "stringr",
-        "utils"
-      ],
-      "Hash": "17294aa61048e32ed3d08070624ee26a"
     },
     "R6": {
       "Package": "R6",
@@ -1070,20 +1042,6 @@
       ],
       "Hash": "fd6824ad91ede64151e93af67df6376b"
     },
-    "doParallel": {
-      "Package": "doParallel",
-      "Version": "1.0.17",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "foreach",
-        "iterators",
-        "parallel",
-        "utils"
-      ],
-      "Hash": "451e5edf411987991ab6a5410c45011f"
-    },
     "dotCall64": {
       "Package": "dotCall64",
       "Version": "1.1-1",
@@ -1462,18 +1420,6 @@
         "stats"
       ],
       "Hash": "f72b5d1ed587f8905e38ee7295e88d80"
-    },
-    "gridBase": {
-      "Package": "gridBase",
-      "Version": "0.4-7",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "graphics",
-        "grid"
-      ],
-      "Hash": "c6b1256546a22b4b9f4fae3ba5117b97"
     },
     "gridExtra": {
       "Package": "gridExtra",
@@ -2272,21 +2218,6 @@
         "rmarkdown"
       ],
       "Hash": "aa65206cf3a649096a20b81d98b06f96"
-    },
-    "rngtools": {
-      "Package": "rngtools",
-      "Version": "1.5.2",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "digest",
-        "methods",
-        "parallel",
-        "stats",
-        "utils"
-      ],
-      "Hash": "367a915f939520767660671efa0e32bd"
     },
     "rprojroot": {
       "Package": "rprojroot",
