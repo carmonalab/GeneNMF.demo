@@ -101,7 +101,7 @@ geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, nfeature
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
-                                        nprograms=10,
+                                        nMP=10,
                                         weight.explained = 0.7,
                                         max.genes=100)
 ```
@@ -210,12 +210,19 @@ a | b
 
 # Final remarks
 
-NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unbiased manner. Because it is calculated for each sample separately, it bypasses the need to perform batch effect correction to analyse samples jointly. This aspect makes it particularly interesting for the analysis of gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4). 
+NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unbiased manner. Because it is calculated for each sample separately, it bypasses the need to perform batch effect correction to analyse samples jointly. This aspect makes it particularly interesting for the analysis of gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9), [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4) [Yerly et al. (2024)](https://www.biorxiv.org/content/10.1101/2024.05.31.596823v1.full).
+
+
 
 # References
 
 * GeneNMF package - [LINK](https://github.com/carmonalab/GeneNMF)
 * We use the ultra-fast RcppML method for NMF - [LINK](https://cran.r-project.org/web/packages/RcppML/vignettes/RcppML.html)
+
+# See also
+
+* Characterizing **intratumor heterogeneity** with GeneNMF - [DEMO](NMF_demo_cancercells.html)
+* More demos are available at the [GeneNMF GitHub repo](https://github.com/carmonalab/GeneNMF). Questions? open an [issue](https://github.com/carmonalab/GeneNMF/issues) on GitHub.
 
 # Session Info
 ```{r}
