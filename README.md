@@ -4,6 +4,7 @@
 
 ## Demos
 * [Decomposing human PBMC data](https://carmonalab.github.io/GeneNMF.demo/NMF_demo_PBMC.html)
+* [Gene programs in cancer cells](https://carmonalab.github.io/NMF_demo_cancercells.html)
 
 ## References
 GeneNMF repository: [GeneNMF on GitHub](https://github.com/carmonalab/GeneNMF)
