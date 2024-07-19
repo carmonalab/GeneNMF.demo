@@ -31,7 +31,8 @@ renv::restore()
 ```
 
 ```{r results=F, warning=F, message=F}
-install.packages("GeneNMF")
+library(remotes)
+remotes::install_github("carmonalab/GeneNMF", ref="dev") #TMP
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
@@ -87,48 +88,46 @@ DimPlot(seu, reduction = "NMF_UMAP", group.by = "celltype.l1", label=T) + theme(
 
 ```
 
-# Consistent NMF meta-programs across multiple samples
+# Consistent NMF programs across multiple samples
 
-Identification of robust gene programs requires their detection across samples and variability of input parameters. Perhaps the most crucial parameter to NMF is the dimensionality `k`, which corresponds to the number of programs of the low-dimensional matrix. To determine robust programs, we can run NMF over multiple numbers of `k` and determine programs that are consistently found across these runs. The `multiNMF()` function automatically performs NMF over a list of samples and for multiple values of `k`:
+Identification of robust gene programs requires their detection across samples and variability of input parameters. Perhaps the most crucial parameter to NMF is the dimensionality `k`, which corresponds to the number of programs of the low-dimensional matrix. To determine robust programs, we can run NMF over multiple numbers of `k` and determine programs that are consistenly found across these runs. The `multiNMF()` function automatically performs NMF over a list of samples and for multiple values of `k`:
 
 ```{r message=F, results=F, warning=F}
 seu.list <- SplitObject(seu, split.by = "donor")
 
-geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, L1=c(0,0),
-                    do_centering=TRUE, nfeatures = 2000)
+geneNMF.programs <- multiNMF(seu.list, assay="SCT", slot="data", k=4:9, nfeatures = 1000)
 ```
 
 We can now combine the gene programs identified over multiple samples and numbers of `k` into **metaprograms** (MPs), i.e. consensus programs that are robustly identified across NMF runs. Here we will define 10 MPs:
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
-                                        nprograms=10,
-                                        max.genes=50,
-                                        hclust.method="ward.D2",
-                                        min.confidence=0.3)
+                                        nMP=10,
+                                        weight.explained = 0.7,
+                                        max.genes=100)
 ```
 
 
-It can be useful to visualize pairwise similarity (Jaccard Index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
+It can be useful to visualize pairwise similarity (in terms of cosine similarity or Jaccard index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
 ```{r fig.width=13, fig.height=11}
-ph <- plotMetaPrograms(geneNMF.metaprograms, jaccard.cutoff = c(0,0.8))
+ph <- plotMetaPrograms(geneNMF.metaprograms)
 ```
 
-We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhoette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
+We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhouette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
 
-Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverge), or have bad internal consistency (low silhouette and meanJaccard). 
+Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverage), or have bad internal consistency (low silhouette and meanSimilarity). 
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
 ```
 
-What are the genes driving each program?
+What are the genes driving each MP?
 ```{r}
-t(as.data.frame(lapply(geneNMF.metaprograms$metaprograms.genes, head)))
+lapply(geneNMF.metaprograms$metaprograms.genes, head)
 ```
 
-# Intepretation of meta-programs by GSEA
+# Intepretation of gene programs by GSEA
 
-To aid the interpretation of MPs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected MPs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
+To aid the interpretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
 
 ```{r results=F, warning=F, message=F}
 library(msigdbr)
@@ -141,32 +140,34 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 })
 ```
 
-For example, MP1 appears to correlate significantly with Platelet/Megakaryocyte signatures:
+For example, MP4 appears to correlate significantly with natural killer cell (NK) signatures:
 ```{r}
-head(top_p$MP1)
+head(top_p$MP4)
 ```
 
-# Signature scores for meta-programs
+# Signature scores for gene programs
 
-A simple way to evaluate MPs learned from the data is to calculate gene signature scores with the `UCell` package.
+A simple way to evaluate gene programs learned from the data is to calculate gene signature scores with the `UCell` package.
 
 ```{r}
 mp.genes <- geneNMF.metaprograms$metaprograms.genes
 seu <- AddModuleScore_UCell(seu, features = mp.genes, assay="SCT", ncores=4, name = "")
 ```
 
-We can now see which MPs are enriched in specific cell subtypes (cell type annotation from the original study).
+We can see how many of the programs are enriched in specific cell subtypes (cell type annotation from the original study).
 
 ```{r fig.width=15}
 VlnPlot(seu, features=names(mp.genes), group.by = "celltype.l1",
         pt.size = 0, ncol=5)
 ```
 
-# MP signature scores can define integrated spaces
+# Signature scores to define integrated space
 
-Individual cells can now be represented in terms of their MP scores. Importantly, here the MPs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects and represent samples in a common coordinate space. Let's store these coordinates in the Seurat object: 
+Individual cells can now be represented in terms of their gene program scores. Importantly, here the gene programs were learned as a consensus of gene programs found across multiple samples -- as opposed to calculating NMF once on the whole dataset. This can be an effective strategy to mitigate batch effects, as meta-programs (MPs) are a consensus of gene programs consistently found across individual samples. Let's store these coordinates in the Seurat object: 
 ```{r}
 matrix <- seu@meta.data[,names(mp.genes)]
+
+#dimred <- scale(matrix)
 dimred <- as.matrix(matrix)
 
 colnames(dimred) <- paste0("MP_",seq(1, ncol(dimred)))
@@ -177,6 +178,7 @@ seu@reductions[["MPsignatures"]] <- new("DimReduc",
                                          key = "MP_",
                                          global = FALSE)
 ```
+
 
 We can also use these scores to generate a UMAP representation and visualize the data in 2D:
 
@@ -193,14 +195,34 @@ FeaturePlot(seu, features = names(mp.genes), reduction = "umap_MP", ncol=4) &
    theme(aspect.ratio = 1, axis.text=element_blank(), axis.ticks=element_blank())
 ```
 
+```{r}
+a <- DimPlot(seu, reduction = "umap_MP", group.by = "celltype.l1", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("Original cell types") + NoLegend()
+
+b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor", label=T) + theme(aspect.ratio = 1,
+                                                            axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank()) + ggtitle("Donor") + NoLegend()
+a | b
+```
+
 # Final remarks
 
-NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unbiased manner. Because it is calculated for each sample separately, it bypasses the need to perform batch effect correction to analyse samples jointly. This aspect makes it particularly interesting for the analysis of gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4). 
+NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unbiased manner. Because it is calculated for each sample separately, it bypasses the need to perform batch effect correction to analyse samples jointly. This aspect makes it particularly interesting for the analysis of gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9), [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4) [Yerly et al. (2024)](https://www.biorxiv.org/content/10.1101/2024.05.31.596823v1.full).
+
+
 
 # References
 
 * GeneNMF package - [LINK](https://github.com/carmonalab/GeneNMF)
 * We use the ultra-fast RcppML method for NMF - [LINK](https://cran.r-project.org/web/packages/RcppML/vignettes/RcppML.html)
+
+# See also
+
+* Characterizing **intratumor heterogeneity** with GeneNMF - [DEMO](NMF_demo_cancercells.html)
+* More demos are available at the [GeneNMF GitHub repo](https://github.com/carmonalab/GeneNMF). Questions? open an [issue](https://github.com/carmonalab/GeneNMF/issues) on GitHub.
 
 # Session Info
 ```{r}
