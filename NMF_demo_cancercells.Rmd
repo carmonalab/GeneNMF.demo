@@ -38,7 +38,7 @@ library(dplyr)
 library(RColorBrewer)
 
 #install.packages("GeneNMF")
-remotes::install_github("carmonalab/GeneNMF", ref="dev")  #from GitHub
+remotes::install_github("carmonalab/GeneNMF")  #from GitHub
 library(GeneNMF)
 ```
 

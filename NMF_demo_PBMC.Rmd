@@ -14,7 +14,7 @@ knit: (function(input_file, encoding) {
  output_file=file.path(dirname(input_file), out_dir, 'NMF_demo_PBMC.html'))})
 ---
 
-Non-negative matrix factorization is a method for the analysis of high dimensional data that allows extracting sparse and meaningful features from a set of non-negative data vectors. It is well suited for decomposing scRNA-seq data, effectively reducing large complex matrices ($10^4$ of genes times $10^5$ of cells) into a few interpretable gene programs. It has been especially used to extract recurrent gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4)), which are otherwise difficult to integrate and analyse jointly.
+Non-negative matrix factorization is a method for the analysis of high dimensional data that allows extracting sparse and meaningful features from a set of non-negative data vectors. It is well suited for decomposing scRNA-seq data, effectively reducing large complex matrices ($10^4$ of genes times $10^5$ of cells) into a few interpretable gene programs. It has been especially used to extract recurrent gene programs in cancer cells (see e.g. [Barkely et al. (2022)](https://www.nature.com/articles/s41588-022-01141-9) and [Gavish et al. (2023)](https://www.nature.com/articles/s41586-023-06130-4)), which are otherwise difficult to integrate and analyse jointly. See also our demo on [characterizing **intratumor heterogeneity** with GeneNMF](https://carmonalab.github.io/GeneNMF.demo/NMF_demo_cancercells.html)
 
 ![](docs/NMF_schematic.png){width=75%}
 
@@ -32,7 +32,7 @@ renv::restore()
 
 ```{r results=F, warning=F, message=F}
 library(remotes)
-remotes::install_github("carmonalab/GeneNMF", ref="dev") #TMP
+remotes::install_github("carmonalab/GeneNMF") #from Github
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
@@ -221,7 +221,7 @@ NMF can be a powerful tool to extract gene programs for scRNA-seq data in an unb
 
 # See also
 
-* Characterizing **intratumor heterogeneity** with GeneNMF - [DEMO](NMF_demo_cancercells.html)
+* Characterizing **intratumor heterogeneity** with GeneNMF - [DEMO](https://carmonalab.github.io/GeneNMF.demo/NMF_demo_cancercells.html)
 * More demos are available at the [GeneNMF GitHub repo](https://github.com/carmonalab/GeneNMF). Questions? open an [issue](https://github.com/carmonalab/GeneNMF/issues) on GitHub.
 
 # Session Info

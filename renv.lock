@@ -159,8 +159,8 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "GeneNMF",
       "RemoteUsername": "carmonalab",
-      "RemoteRef": "dev",
-      "RemoteSha": "529fa1fda743f5e955e6c40b32492ce35de6c3c5",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "d040c23eca2a1ce70663cf3faad646918dcb51b4",
       "Requirements": [
         "Matrix",
         "R",
@@ -175,7 +175,7 @@
         "utils",
         "viridis"
       ],
-      "Hash": "cd8e88889ac43a95841803064c728696"
+      "Hash": "dd907d6e10833fed3ce9006908fac79d"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
