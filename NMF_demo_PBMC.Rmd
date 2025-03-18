@@ -32,7 +32,9 @@ renv::restore()
 
 ```{r results=F, warning=F, message=F}
 library(remotes)
-remotes::install_github("carmonalab/GeneNMF") #from Github
+#install.packages("GeneNMF") #from CRAN 
+#remotes::install_github("carmonalab/GeneNMF")  # or from GitHub
+
 library(GeneNMF)
 library(Seurat)
 library(ggplot2)
@@ -119,6 +121,7 @@ Based on these metrics, one may decide to drop some of the programs, e.g. if the
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
 ```
+
 
 What are the genes driving each MP?
 ```{r}
