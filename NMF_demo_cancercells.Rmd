@@ -83,6 +83,7 @@ We can now combine the gene programs identified over multiple samples and number
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
                                         metric = "cosine",
+                                        specificity.weight = 5,
                                         weight.explained = 0.5,
                                         nMP=10)
 ```
@@ -158,9 +159,9 @@ What are the genes driving each meta-program?
 lapply(geneNMF.metaprograms$metaprograms.genes, head)
 ```
 
-We can also inspect their relative weights to see how much each gene contributes to the MP. For example, for MP6:
+We can also inspect their relative weights to see how much each gene contributes to the MP. For example, for MP7:
 ```{r}
-geneNMF.metaprograms$metaprograms.genes.weights$MP6
+geneNMF.metaprograms$metaprograms.genes.weights$MP7
 ```
 
 To aid the interpretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan MSigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C5" category, biological process subcategory; but other classes such as "H" (hallmark gene sets) or "C8" (cell type) may be more relevant in other contexts.
