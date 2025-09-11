@@ -1,7 +1,7 @@
 ---
 title: "Characterizing intratumor heterogeneity with GeneNMF"
 author: "M. Andreatta"
-date: "17/07/2024"
+date: "11/09/2025"
 output:
   rmdformats::readthedown:
     self-contained: true
@@ -36,6 +36,7 @@ library(patchwork)
 library(tidyr)
 library(dplyr)
 library(RColorBrewer)
+library(viridis)
 
 #install.packages("GeneNMF") #from CRAN 
 #remotes::install_github("carmonalab/GeneNMF")  # or from GitHub
@@ -91,9 +92,8 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 It can be useful to visualize pairwise similarity (in terms of cosine similarity or Jaccard index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
 ```{r fig.width=10, fig.height=8}
-ph <- plotMetaPrograms(geneNMF.metaprograms,
+plotMetaPrograms(geneNMF.metaprograms,
                        similarity.cutoff = c(0.1,1))
-ph
 ```
 
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhouette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
@@ -106,9 +106,8 @@ Based on these metrics, one may decide to drop some of the programs, e.g. if the
 ```{r fig.width=10, fig.height=8}
 geneNMF.metaprograms.filtered <- dropMetaPrograms(geneNMF.metaprograms, dropMP = "MP4")
 
-ph <- plotMetaPrograms(geneNMF.metaprograms.filtered,
+plotMetaPrograms(geneNMF.metaprograms.filtered,
                        similarity.cutoff = c(0.1,1))
-ph
 ```
 
 
@@ -127,10 +126,10 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 We see the one on the MPs has now been dropped (we could have also picked it up by its poor metrics just above).
 
 ```{r fig.width=10, fig.height=8}
-ph <- plotMetaPrograms(geneNMF.metaprograms,
+plotMetaPrograms(geneNMF.metaprograms,
                        similarity.cutoff = c(0.1,1))
-ph
 ```
+
 
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
@@ -148,6 +147,19 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 Now we have larger meta-program gene sets:
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
+```
+
+We can also change the annotation colors and/or the palette for program similarity:
+```{r fig.width=10, fig.height=8}
+anno_colors <- brewer.pal(n=10, name="Paired")
+names(anno_colors) <- names(geneNMF.metaprograms$metaprograms.genes)
+
+
+plotMetaPrograms(geneNMF.metaprograms,
+                       palette=viridis(100, option = "H", direction = 1),
+                       annotation_colors = anno_colors,
+                       similarity.cutoff = c(0,1))
+
 ```
 
 Other important parameters to `getMetaPrograms()` are `nMP` (the target number of meta-programs) and `specificity.weight`, which controls how much MP signatures are allowed to overlap. From the default `specificity.weight=5`, lower values (e.g. `=3`) allows more overlapping MPs, higher values (e.g. `=8`) enforces higher sparsity in the decomposition. 
