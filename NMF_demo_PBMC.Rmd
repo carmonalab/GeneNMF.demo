@@ -55,7 +55,7 @@ data.path <- sprintf("%s/pbmc_multimodal.downsampled20k.seurat.rds", ddir)
 
 if (!file.exists(data.path)) {
     dir.create(ddir)
-    dataUrl <- "https://www.dropbox.com/s/akzu3hp4uz2mpkv/pbmc_multimodal.downsampled20k.seurat.rds?dl=1"
+    dataUrl <- "https://figshare.com/ndownloader/files/60037946"
     download.file(dataUrl, data.path)
 }
 
@@ -208,10 +208,10 @@ a <- DimPlot(seu, reduction = "umap_MP", group.by = "celltype.l1", label=T) + th
     axis.title = element_blank(),
     axis.ticks = element_blank()) + ggtitle("Original cell types") + NoLegend()
 
-b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor", label=T) + theme(aspect.ratio = 1,
+b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor") + theme(aspect.ratio = 1,
                                                             axis.text = element_blank(),
     axis.title = element_blank(),
-    axis.ticks = element_blank()) + ggtitle("Donor") + NoLegend()
+    axis.ticks = element_blank()) + ggtitle("Donor")
 a | b
 ```
 
