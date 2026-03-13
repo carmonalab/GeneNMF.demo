@@ -1,7 +1,7 @@
 ---
 title: "Decomposing scRNA-seq data using NMF - a demo"
 author: "M. Andreatta"
-date: "23/02/2024"
+date: "11/09/2025"
 output:
   rmdformats::readthedown:
     self-contained: true
@@ -42,6 +42,7 @@ library(UCell)
 library(patchwork)
 library(Matrix)
 library(RcppML)
+library(RColorBrewer)
 library(viridis)
 ```
 
@@ -54,7 +55,7 @@ data.path <- sprintf("%s/pbmc_multimodal.downsampled20k.seurat.rds", ddir)
 
 if (!file.exists(data.path)) {
     dir.create(ddir)
-    dataUrl <- "https://www.dropbox.com/s/akzu3hp4uz2mpkv/pbmc_multimodal.downsampled20k.seurat.rds?dl=1"
+    dataUrl <- "https://figshare.com/ndownloader/files/60037946"
     download.file(dataUrl, data.path)
 }
 
@@ -112,7 +113,10 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
 It can be useful to visualize pairwise similarity (in terms of cosine similarity or Jaccard index) between individual gene programs that compose meta-programs. We can see "blocks" corresponding to gene programs of high similarity across datasets and values of `k`. We can then cut the similarity tree at a given height to find blocks of similar programs and derive consensus gene signatures for each block. For example, here we cut the tree to the height corresponding to 10 clusters of programs (i.e. 10 MPs):
 
 ```{r fig.width=13, fig.height=11}
-ph <- plotMetaPrograms(geneNMF.metaprograms)
+anno_colors <- brewer.pal(n=10, name="Paired")
+names(anno_colors) <- names(geneNMF.metaprograms$metaprograms.genes)
+
+ph <- plotMetaPrograms(geneNMF.metaprograms, annotation_colors = anno_colors)
 ```
 
 We can also inspect useful statistics, such as the "sample coverage" (in what fraction of samples the MP was detected); or the silhouette coefficient (how similar are individual programs in a MP relative to programs in other MPs - the higher the better).
@@ -204,10 +208,10 @@ a <- DimPlot(seu, reduction = "umap_MP", group.by = "celltype.l1", label=T) + th
     axis.title = element_blank(),
     axis.ticks = element_blank()) + ggtitle("Original cell types") + NoLegend()
 
-b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor", label=T) + theme(aspect.ratio = 1,
+b <- DimPlot(seu, reduction = "umap_MP", group.by = "donor") + theme(aspect.ratio = 1,
                                                             axis.text = element_blank(),
     axis.title = element_blank(),
-    axis.ticks = element_blank()) + ggtitle("Donor") + NoLegend()
+    axis.ticks = element_blank()) + ggtitle("Donor")
 a | b
 ```
 
