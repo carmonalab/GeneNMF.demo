@@ -102,9 +102,9 @@ We can also inspect useful statistics, such as the "sample coverage" (in what fr
 geneNMF.metaprograms$metaprograms.metrics
 ```
 
-Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverage), or have bad internal consistency (low silhouette and meanSimilarity). For example, one may decide to drop MP4 because of its negative silhouette coefficient:
+Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverage), or have bad internal consistency (low silhouette and meanSimilarity). For example, one may decide to drop MP5 because of its negative silhouette coefficient:
 ```{r fig.width=10, fig.height=8}
-geneNMF.metaprograms.filtered <- dropMetaPrograms(geneNMF.metaprograms, dropMP = "MP4")
+geneNMF.metaprograms.filtered <- dropMetaPrograms(geneNMF.metaprograms, dropMP = "MP5")
 
 plotMetaPrograms(geneNMF.metaprograms.filtered,
                        similarity.cutoff = c(0.1,1))
@@ -123,18 +123,11 @@ geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
                                         min.confidence = 0.7)
 ```
 
-We see the one on the MPs has now been dropped (we could have also picked it up by its poor metrics just above).
-
-```{r fig.width=10, fig.height=8}
-plotMetaPrograms(geneNMF.metaprograms,
-                       similarity.cutoff = c(0.1,1))
-```
-
-
 ```{r}
 geneNMF.metaprograms$metaprograms.metrics
 ```
-We see that most MPs are composed of around 10-20 genes (column `numberGenes` in the table above). We can control the size of the MPs using the `weight.explained` parameter. For example, we can increase `weight.explained` to 0.8 to include all genes that allow to explain 80% of loadings in the consensus gene set:
+
+We see that most MPs are composed of around 10-50 genes (column `numberGenes` in the table above). We can control the size of the MPs using the `weight.explained` parameter. For example, we can increase `weight.explained` to 0.8 to include all genes that allow to explain 80% of loadings in the consensus gene set:
 
 ```{r}
 geneNMF.metaprograms <- getMetaPrograms(geneNMF.programs,
