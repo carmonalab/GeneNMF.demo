@@ -102,9 +102,9 @@ We can also inspect useful statistics, such as the "sample coverage" (in what fr
 geneNMF.metaprograms$metaprograms.metrics
 ```
 
-Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverage), or have bad internal consistency (low silhouette and meanSimilarity). For example, one may decide to drop MP5 because of its negative silhouette coefficient:
+Based on these metrics, one may decide to drop some of the programs, e.g. if they are specific for few samples only (low sample coverage), or have bad internal consistency (low silhouette and meanSimilarity). For example, one may decide to drop MP4 because of its negative silhouette coefficient:
 ```{r fig.width=10, fig.height=8}
-geneNMF.metaprograms.filtered <- dropMetaPrograms(geneNMF.metaprograms, dropMP = "MP5")
+geneNMF.metaprograms.filtered <- dropMetaPrograms(geneNMF.metaprograms, dropMP = "MP4")
 
 plotMetaPrograms(geneNMF.metaprograms.filtered,
                        similarity.cutoff = c(0.1,1))

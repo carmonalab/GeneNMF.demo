@@ -55,7 +55,7 @@ data.path <- sprintf("%s/pbmc_multimodal.downsampled20k.seurat.rds", ddir)
 
 if (!file.exists(data.path)) {
     dir.create(ddir)
-    dataUrl <- "https://figshare.com/ndownloader/files/60037946"
+    dataUrl <- "https://ndownloader.figshare.com/files/60037946"
     download.file(dataUrl, data.path)
 }
 
@@ -70,6 +70,7 @@ NMF can be applied to reduce the dimensionality of the data from tens of thousan
 ndim <- 15
 
 seu <- FindVariableFeatures(seu, nfeatures = 1000)
+
 seu <- runNMF(seu, k = ndim, assay="SCT")
 ```
 
@@ -132,7 +133,7 @@ What are the genes driving each MP?
 lapply(geneNMF.metaprograms$metaprograms.genes, head)
 ```
 
-# Intepretation of gene programs by GSEA
+# Intepretation of gene programs by overrepresentation analysis
 
 To aid the interpretation of gene programs, we can compare them to known signatures from public databases. The `runGSEA()` function can be useful to scan msigDB and evaluate the overlap of detected gene programs with signatures in the databases. Here we compare to the "C8" category (cell type signature gene sets); but other classes such as "H" (hallmark gene sets) may be more relevant in other contexts.
 
@@ -147,7 +148,7 @@ top_p <- lapply(geneNMF.metaprograms$metaprograms.genes, function(program) {
 })
 ```
 
-For example, MP4 appears to correlate significantly with natural killer cell (NK) signatures:
+For example, MP4 appears to overlap significantly with natural killer cell (NK) signatures:
 ```{r}
 head(top_p$MP4)
 ```
